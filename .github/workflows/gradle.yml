@@ -571,7 +571,7 @@ jobs:
         if: always()
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_key: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
+          service_account_key: ${{ secrets.DEV_GCP_SA_KEY }}
           export_default_credentials: true
         
       - name: Upload Test Results to GCS
