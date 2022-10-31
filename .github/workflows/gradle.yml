@@ -83,7 +83,7 @@ jobs:
             ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
-            
+
 
   # Uncomment to debug.
   #  changes-output:
@@ -251,7 +251,7 @@ jobs:
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python tools/bin/upload_test_results_to_gh_api.py --json connectors_base_results.json
+          python tools/bin/upload_test_results_to_gcs.py --json connectors_base_results.json
         
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
@@ -571,14 +571,14 @@ jobs:
         if: always()
         uses: google-github-actions/setup-gcloud@v0
         with:
-          service_account_key: ${{ secrets.DEV_GHA_SA_KEY }}
+          service_account_key: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
           export_default_credentials: true
         
       - name: Upload Test Results to GCS
         if: always()
         run: | 
-          python tools/bin/upload_test_results_to_gh_api.py --json platform_results_1.json
-          python tools/bin/upload_test_results_to_gh_api.py --json platform_results_2.json
+          python tools/bin/upload_test_results_to_gcs.py --json platform_results_1.json
+          python tools/bin/upload_test_results_to_gcs.py --json platform_results_2.json
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=echo ${{ fromJSON( steps.platform-results-1.outputs.json ).check_url }} | sed 's@.*/@@'  
           gsutil -h "Cache-Control:public" cp "${{ fromJSON( steps.platform-results-1.outputs.json ).check_url }}" "gs://$gcs_bucket_name/$filename"
@@ -751,7 +751,7 @@ jobs:
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python tools/bin/upload_test_results_to_gh_api.py --json kube_results.json
+          python tools/bin/upload_test_results_to_gcs.py --json kube_results.json
       
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
