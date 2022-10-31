@@ -580,7 +580,7 @@ jobs:
           python tools/bin/upload_test_results_to_gh_api.py --json platform_results_2.json
           gcs_bucket_name="dev-ab-ci-run-results"
           filename=echo ${{ fromJSON( steps.platform-results-1.outputs.json ).check_url }} | sed 's@.*/@@'  
-          gsutil -h "Cache-Control:public, max-age=10" cp "${{ fromJSON( steps.platform-results-1.outputs.json ).check_url }}" "gs://$gcs_bucket_name/$filename"
+          gsutil -h "Cache-Control:public" cp "${{ fromJSON( steps.platform-results-1.outputs.json ).check_url }}" "gs://$gcs_bucket_name/$filename"
         
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
