@@ -1,19 +1,14 @@
 import argparse
 import json
 import os
-from github import Github
 
 
 '''
 
 This script is intended to be run in conjuction with https://github.com/EnricoMi/publish-unit-test-result-action to upload trimmed
-test results from the output to the checks api "text" field for further analysis.
+test results from the output to a GCS bucket for further analysis.
 
-The script takes as input the filename of the json output by the aforementioned action, trims it, and uploads it to the "text" field
-of the check run provided in the json file.
-
-Note that there is a limit of ~65k characters in the check run API text field - so we do some trimming of the json to ensure that size
-is respected.
+The script takes as input the filename of the json output by the aforementioned action, trims it, and uploads it to GCS with a ".jsonl" filename 
 
 '''
 
@@ -76,7 +71,7 @@ def main():
             f.write('\n')
 
     
-    z = open(args.json)
+    z = open(args.json + "l")
     print(z)
         
 

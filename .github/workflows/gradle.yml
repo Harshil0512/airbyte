@@ -244,14 +244,8 @@ jobs:
           comment_mode: off
           json_file: connectors_base_results.json
           check_name: "Connectors Base Test Results"
-
-      - name: Install PyGithub
-        if: always()
-        run: |
-          python -m pip install --upgrade pip
-          pip install PyGithub
           
-      - name: Upload Test Results To Check Run
+      - name: Upload Test Results to GCS
         if: always()
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -572,20 +566,22 @@ jobs:
           json_test_case_results: true
           check_name: "Platform Test Results (Subprojects)"
       
-      - name: Install PyGithub
+      - name: Setup Cloud SDK
         if: always()
-        run: |
-          python -m pip install --upgrade pip
-          pip install PyGithub
-          
-      - name: Upload Test Results To Check Run
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          service_account_key: ${{ secrets.DEV_GHA_SA_KEY }}
+          export_default_credentials: true
+        
+      - name: Upload Test Results to GCS
         if: always()
-        env: 
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+        run: | 
           python tools/bin/upload_test_results_to_gh_api.py --json platform_results_1.json
           python tools/bin/upload_test_results_to_gh_api.py --json platform_results_2.json
-      
+          gcs_bucket_name="dev-ab-ci-run-results"
+          filename=echo ${{ fromJSON( steps.platform-results-1.outputs.json ).check_url }} | sed 's@.*/@@'  
+          gsutil -h "Cache-Control:public, max-age=10" cp "${{ fromJSON( steps.platform-results-1.outputs.json ).check_url }}" "gs://$gcs_bucket_name/$filename"
+        
       - name: Generate Test Report
         uses: dorny/test-reporter@v1
         if: always()    # run this step even if previous step failed
@@ -749,13 +745,7 @@ jobs:
           json_file: kube_results.json
           check_name: "Kube Test Results"
       
-      - name: Install PyGithub
-        if: always()
-        run: |
-          python -m pip install --upgrade pip
-          pip install PyGithub
-          
-      - name: Upload Test Results To Check Run
+      - name: Upload Test Results to GCS
         if: always()
         env: 
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -785,6 +775,8 @@ jobs:
         with:
           name: Kubernetes Logs
           path: /tmp/kubernetes_logs/*
+
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-kube-acceptance-test-runner:
     name: "Platform: Stop Kube Acceptance Test EC2 Runner"
